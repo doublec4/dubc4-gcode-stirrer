@@ -59,17 +59,15 @@ class StirGCodeGenerator:
 
 #Example run:
 """
-xMax = 300
-yMax = 300
-zMax = 300
-zFinal = zMax
+xMax = 200
+yMax = 200
+zMax = 200
+zFinal = 50
 stirHeight = 20
 stirDiameter = 30
 stirSpeed = 10
 stirTime = 5
-fileName = "test.txt"
-
-#get inputs from user - commented out currently
+fileName = "test.gcode"
 """
 print("Please enter the following inputs.")
 
