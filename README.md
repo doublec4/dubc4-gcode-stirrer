@@ -8,3 +8,14 @@ Notes on gcode M808:
 1) It uses gcode M808 to repeat the stirring. To use command M808, the firmware's Configuration_adv.h file needs to be edited and the firmware re-flashed. To edit the Configuration_adv.h file, go to line 1327 and uncomment "#define GCODE_REPEAT_MARKERS".
 
 2) M808 may only work when printing from an SD card. I have not tested it using any other method.
+
+test.gcode is an example output created with the following inputs:
+  xMax = 200
+  yMax = 200
+  zMax = 200
+  zFinal = 50
+  stirHeight = 20
+  stirDiameter = 30
+  stirSpeed = 10
+  stirTime = 5
+  fileName = "test.gcode"
