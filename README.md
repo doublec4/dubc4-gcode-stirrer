@@ -1,2 +1,10 @@
 # dubc4-gcode-stirrer
-python project to generate gcode for stirring
+python project to generate gcode for stirring from reddit discussion https://www.reddit.com/r/3Dprinting/comments/oxlzgl/looking_for_someone_to_make_a_program_script_that/.
+
+This python project was written to be used with the Marlin firmware: https://marlinfw.org/. As of writing, the Marlin firmware version is 2.0.9.1 and should work with Marlin firmware version 2.0.8 and up.
+
+Notes on gcode M808:
+
+1) It uses gcode M808 to repeat the stirring. To use command M808, the firmware's Configuration_adv.h file needs to be edited and the firmware re-flashed. To edit the Configuration_adv.h file, go to line 1327 and uncomment "#define GCODE_REPEAT_MARKERS".
+
+2) M808 may only work when printing from an SD card. I have not tested it using any other method.
