@@ -9,13 +9,13 @@ Notes on gcode M808:
 
 2) M808 may only work when printing from an SD card. I have not tested it using any other method.
 
-test.gcode is an example output created with the following inputs:
-  xMax = 200
-  yMax = 200
-  zMax = 200
-  zFinal = 50
-  stirHeight = 20
-  stirDiameter = 30
-  stirSpeed = 10
-  stirTime = 5
-  fileName = "test.gcode"
+test.gcode is an example output created with the following inputs:  
+- xMax = 200  
+- yMax = 200  
+- zMax = 200  
+- zFinal = 50  
+- stirHeight = 20  
+- stirDiameter = 30  
+- stirSpeed = 10  
+- stirTime = 5  
+- fileName = "test.gcode"  
