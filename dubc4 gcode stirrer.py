@@ -65,7 +65,7 @@ class StirGCodeGenerator:
             return (
                 (";Stirring",
                  *(f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}" 
-                   for _ in range(self.loops)))
+                   for _ in range(self.loops))),
             )
         
         return (
