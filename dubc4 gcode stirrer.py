@@ -28,10 +28,12 @@ class StirGCodeGenerator:
         self.travelSpeed = round(float(travelSpeed))
         self.compatibility = compatibility
 
-    def generate(self, filename):
+    def generate(self, filename, endCode=None):
         """ Generates gcode and writes to 'filename'.
         
         Existing files will be overwritten.
+        
+        'endCode' is a gcode file that gets appended to the end of the generated one.
         
         """
         xOffset = self.center[0] - self.stirRadius
@@ -47,6 +49,13 @@ class StirGCodeGenerator:
             for section in gcode:
                 output.write('\n'.join(section))
                 output.write('\n'*2) # delimit sections with a blank line in between
+            
+            if not endCode:
+                return # finish now if no endcode to add
+            
+            with open(endCode) as addendum:
+                for line in addendum:
+                    output.write(line)
                 
     def generate_setup(self, xOffset, yOffset):
         return (
@@ -110,7 +119,8 @@ zFinal       = input("Final stirrer height (mm): ")
 travelSpeed  = input("Travel speed (mm/sec - default 2400): ") or 2400
 disable_M808 = input("Compatiblity mode (disable M808) [y/N]?: ").lower() == 'y'
 fileName     = input("Enter filename: ")
+endCode      = input("Enter end code filename (leave blank to skip): ").strip()
 
 g = StirGCodeGenerator((xMax, yMax, zMax), zFinal, stirDiameter, stirSpeed, stirTime, stirHeight,
                        travelSpeed, disable_M808)
-g.generate(fileName)
+g.generate(fileName, endCode)
