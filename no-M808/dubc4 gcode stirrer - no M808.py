@@ -41,10 +41,8 @@ class StirGCodeGenerator:
 
         #Stirring
         f.write(";Stirring\n")
-        i = 1
-        while i <= self.loops:
+        for _ in range(self.loops):
             f.write("G2 X" + str(self.center[0] - self.stirRadius) + " Y" + str(self.center[1]) + " I" + str(self.stirRadius) + " J0 F" + str(self.stirSpeed) + "\n")
-            i += 1
 
         #Raise stirrer
         f.write("\n;Raise stirrer\n")
