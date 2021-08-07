@@ -9,53 +9,46 @@ import math
 #stirSpeed: speed at which to stir (mm/sec)
 #stirTime: duration of stirring (min)
 #filename: file that will contain the generated g-code, existing files will be overwritten
+#travelSpeed: speed of travel moves (mm/sec)
 
 class StirGCodeGenerator:
-    def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight):
+    def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, travelSpeed=2400):
         self.center = [round(float(xMax) / 2, 2), round(float(yMax) / 2, 2), round(float(zMax) / 2, 2)]
         self.zFinal = round(float(zFinal))
         self.stirRadius = round(float(stirDiameter) / 2, 2)
         self.loops = round(float(stirTime) * 60 / (math.pi * float(stirDiameter) / float(stirSpeed)), 0)
         self.stirSpeed = round(float(stirSpeed) * 60, 2)
         self.stirHeight = round(float(stirHeight), 2)
-        self.filename = filename
+        self.travelSpeed = round(float(travelSpeed))
 
     def generate(self, filename):
+        xOffset = self.center[0] - self.stirRadius
+        yOffset = self.center[1]
+        gcode = (
+            ("; *** G-code Prefix ***"
+             "; Set unit system ([mm] mode)",
+             "G21"),
+            (";Align coordinates to stirrer",
+             "G28 ; Home Position"
+             "G90 ; Absolute Positioning"),
+            (";Position stirrer",
+             f"G1 X{xOffset} Y{yOffset} F{self.travelSpeed}",
+             f"G1 Z{self.stirHeight} F{self.travelSpeed}"),
+            (";Start Loop",
+             f"M808 L{self.loops}"),
+            (";Stirring",
+             f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}"),
+            (";End Loop",
+             "M808"),
+            (";Raise stirrer",
+             f"G1 Z{self.zFinal} F{self.travelSpeed}")
+        )
+        
         #file writing
-        f = open(filename, "w")
-
-        #set unit system
-        f.write("; *** G-code Prefix ***\n; [mm] mode\n")
-        f.write("G21\n\n")
-
-        #align the coordinates (home, set absolute positioning)
-        f.write(";Align coordinates to stirrer\n")
-        f.write("G28 ; Home Position\n")
-        f.write("G90 ; Absolute Positioning\n\n")
-
-        #Positions the stirrer
-        f.write(";Position stirrer\n")
-        f.write("G1 X" + str(self.center[0] - self.stirRadius) + " Y" + str(self.center[1]) + " F2400\n")
-        f.write("G1 Z" + str(self.stirHeight) + " F2400\n\n")
-
-        #start looping
-        f.write(";Start Loop\n")
-        f.write("M808 L" + str(self.loops) + "\n\n")
-
-        #Stirring
-        f.write(";Stirring\n")
-        f.write("G2 X" + str(self.center[0] - self.stirRadius) + " Y" + str(self.center[1]) + " I" + str(self.stirRadius) + " J0 F" + str(self.stirSpeed) + "\n\n")
-
-        #end looping
-        f.write(";End Loop\n")
-        f.write("M808\n\n")
-
-        #Raise stirrer
-        f.write(";Raise stirrer\n")
-        f.write("G1 Z" + str(self.zFinal) + " F2400\n\n")
-
-        #end file writing
-        f.close()
+        with open(filename, "w") as output:
+            for section in gcode:
+                output.write('\n'.join(section))
+                output.write('\n'*2) # delimit sections with a blank line in between
 
 #Example run:
 """
