@@ -11,7 +11,7 @@ import math
 #filename: file that will contain the generated g-code, existing files will be overwritten
 
 class StirGCodeGenerator:
-    def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, filename):
+    def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight):
         self.center = [round(float(xMax) / 2, 2), round(float(yMax) / 2, 2), round(float(zMax) / 2, 2)]
         self.zFinal = round(float(zFinal))
         self.stirRadius = round(float(stirDiameter) / 2, 2)
@@ -20,9 +20,9 @@ class StirGCodeGenerator:
         self.stirHeight = round(float(stirHeight), 2)
         self.filename = filename
 
-    def generate(self):
+    def generate(self, filename):
         #file writing
-        f = open(self.filename, "w")
+        f = open(filename, "w")
 
         #set unit system
         f.write("; *** G-code Prefix ***\n; [mm] mode\n")
@@ -81,5 +81,5 @@ stirHeight   = input("Stirrer height (mm): ")
 zFinal       = input("Final stirrer height (mm): ")
 fileName     = input("Enter filename: ")
 
-g = StirGCodeGenerator(xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, fileName)
-g.generate()
+g = StirGCodeGenerator(xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight)
+g.generate(fileName)
