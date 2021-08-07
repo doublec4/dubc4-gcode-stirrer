@@ -21,7 +21,8 @@ class StirGCodeGenerator:
         self.center = [round(float(xMax) / 2, 2), round(float(yMax) / 2, 2), round(float(zMax) / 2, 2)]
         self.zFinal = round(float(zFinal))
         self.stirRadius = round(float(stirDiameter) / 2, 2)
-        self.loops = round(float(stirTime) * 60 / (math.pi * float(stirDiameter) / float(stirSpeed)))
+        self.stirTime = float(stirTime)
+        self.loops = round(self.stirTime * 60 / (math.pi * float(stirDiameter) / float(stirSpeed)))
         self.stirSpeed = round(float(stirSpeed) * 60, 2)
         self.stirHeight = round(float(stirHeight), 2)
         self.travelSpeed = round(float(travelSpeed))
@@ -61,9 +62,10 @@ class StirGCodeGenerator:
         )
     
     def generate_stirring(self, xOffset, yOffset):
+        heading = f";Stirring {self.loops} times (~{self.stirTime} mins)"
         if self.compatibility:
             return (
-                (";Stirring",
+                (heading,
                  *(f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}" 
                    for _ in range(self.loops))),
             )
@@ -71,7 +73,7 @@ class StirGCodeGenerator:
         return (
             (";Start Loop",
              f"M808 L{self.loops}"),
-            (";Stirring",
+            (heading,
              f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}"),
             (";End Loop",
              "M808")
