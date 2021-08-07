@@ -1,61 +1,98 @@
 #Program to generate simple g-code per /u/dubc4 request in the /r/3dprinting subreddit
 import math
 
-#xMax: printer length (mm)
-#yMax: printer width (mm)
-#zMax: printer height (mm)
-#zFinal: stirrer height at end of stirring (mm), must be less than zMax
-#stirDiameter: diameter of the circle the stirrer will trace while stirring (mm), must be less than xMax and yMax
-#stirSpeed: speed at which to stir (mm/sec)
-#stirTime: duration of stirring (min)
-#filename: file that will contain the generated g-code, existing files will be overwritten
-
 class StirGCodeGenerator:
-    def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, filename):
+    def __init__(self, printerDims, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight,
+                 travelSpeed=2400, compatibility=False):
+        """ Creates a GCode generator for stirring a set amount of time.
+        
+        'printerDims' is a tuple of printer dimensions (length (x), width (y), height (z)) [mm]
+        'zFinal' stirrer height at the end of stirring [mm], must be less than printer height
+        'stirDiameter' diameter of the circle to trace while stirring [mm],
+            Must be less than printer length and width.
+        'stirSpeed' speed at which to stir [mm/sec]
+        'stirTime' duration of stirring [mins]
+        'travelSpeed' speed of travel moves [mm/sec]
+        'compatibility' boolean for whether to support old firmwares (if True disallows M808 repeat)
+            Defaults to False (M808 allowed).
+        
+        """
+        xMax, yMax, zMax = printerDims
         self.center = [round(float(xMax) / 2, 2), round(float(yMax) / 2, 2), round(float(zMax) / 2, 2)]
         self.zFinal = round(float(zFinal))
         self.stirRadius = round(float(stirDiameter) / 2, 2)
-        self.loops = round(float(stirTime) * 60 / (math.pi * float(stirDiameter) / float(stirSpeed)), 0)
+        self.stirTime = float(stirTime)
+        self.loops = round(self.stirTime * 60 / (math.pi * float(stirDiameter) / float(stirSpeed)))
         self.stirSpeed = round(float(stirSpeed) * 60, 2)
         self.stirHeight = round(float(stirHeight), 2)
-        self.filename = filename
+        self.travelSpeed = round(float(travelSpeed))
+        self.compatibility = compatibility
 
-    def generate(self):
+    def generate(self, filename, endCode=None):
+        """ Generates gcode and writes to 'filename'.
+        
+        Existing files will be overwritten.
+        
+        'endCode' is a gcode file that gets appended to the end of the generated one.
+        
+        """
+        xOffset = self.center[0] - self.stirRadius
+        yOffset = self.center[1]
+        gcode = (
+            *self.generate_setup(xOffset, yOffset),
+            *self.generate_stirring(xOffset, yOffset),
+            *self.generate_cleanup()
+        )
+        
         #file writing
-        f = open(self.filename, "w")
-
-        #set unit system
-        f.write("; *** G-code Prefix ***\n; [mm] mode\n")
-        f.write("G21\n\n")
-
-        #align the coordinates (home, set absolute positioning)
-        f.write(";Align coordinates to stirrer\n")
-        f.write("G28 ; Home Position\n")
-        f.write("G90 ; Absolute Positioning\n\n")
-
-        #Positions the stirrer
-        f.write(";Position stirrer\n")
-        f.write("G1 X" + str(self.center[0] - self.stirRadius) + " Y" + str(self.center[1]) + " F2400\n")
-        f.write("G1 Z" + str(self.stirHeight) + " F2400\n\n")
-
-        #start looping
-        f.write(";Start Loop\n")
-        f.write("M808 L" + str(self.loops) + "\n\n")
-
-        #Stirring
-        f.write(";Stirring\n")
-        f.write("G2 X" + str(self.center[0] - self.stirRadius) + " Y" + str(self.center[1]) + " I" + str(self.stirRadius) + " J0 F" + str(self.stirSpeed) + "\n\n")
-
-        #end looping
-        f.write(";End Loop\n")
-        f.write("M808\n\n")
-
-        #Raise stirrer
-        f.write(";Raise stirrer\n")
-        f.write("G1 Z" + str(self.zFinal) + " F2400\n\n")
-
-        #end file writing
-        f.close()
+        with open(filename, "w") as output:
+            for section in gcode:
+                output.write('\n'.join(section))
+                output.write('\n'*2) # delimit sections with a blank line in between
+            
+            if not endCode:
+                return # finish now if no endcode to add
+            
+            with open(endCode) as addendum:
+                for line in addendum:
+                    output.write(line)
+                
+    def generate_setup(self, xOffset, yOffset):
+        return (
+            ("; *** G-code Prefix ***",
+             "; Set unit system ([mm] mode)",
+             "G21"),
+            (";Align coordinates to stirrer",
+             "G28 ; Home Position",
+             "G90 ; Absolute Positioning"),
+            (";Position stirrer",
+             f"G0 X{xOffset} Y{yOffset} F{self.travelSpeed}",
+             f"G0 Z{self.stirHeight} F{self.travelSpeed}")
+        )
+    
+    def generate_stirring(self, xOffset, yOffset):
+        heading = f";Stirring {self.loops} times (~{self.stirTime} mins)"
+        if self.compatibility:
+            return (
+                (heading,
+                 *(f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}" 
+                   for _ in range(self.loops))),
+            )
+        
+        return (
+            (";Start Loop",
+             f"M808 L{self.loops}"),
+            (heading,
+             f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}"),
+            (";End Loop",
+             "M808")
+        )
+    
+    def generate_cleanup(self):
+        return (
+            (";Raise stirrer",
+             f"G0 Z{self.zFinal} F{self.travelSpeed}"),
+        )
 
 #Example run:
 """
@@ -79,7 +116,11 @@ stirSpeed    = input("Stirring speed (mm/sec): ")
 stirTime     = input("Stirring duration (min): ")
 stirHeight   = input("Stirrer height (mm): ")
 zFinal       = input("Final stirrer height (mm): ")
+travelSpeed  = input("Travel speed (mm/sec - default 2400): ") or 2400
+disable_M808 = input("Compatiblity mode (disable M808) [y/N]?: ").lower() == 'y'
 fileName     = input("Enter filename: ")
+endCode      = input("Enter end code filename (leave blank to skip): ").strip()
 
-g = StirGCodeGenerator(xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, fileName)
-g.generate()
+g = StirGCodeGenerator((xMax, yMax, zMax), zFinal, stirDiameter, stirSpeed, stirTime, stirHeight,
+                       travelSpeed, disable_M808)
+g.generate(fileName, endCode)
