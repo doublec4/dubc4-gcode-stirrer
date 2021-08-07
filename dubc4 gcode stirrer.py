@@ -32,6 +32,19 @@ class StirGCodeGenerator:
         xOffset = self.center[0] - self.stirRadius
         yOffset = self.center[1]
         gcode = (
+            *self.generate_setup(xOffset, yOffset),
+            *self.generate_stirring(xOffset, yOffset),
+            *self.generate_cleanup()
+        )
+        
+        #file writing
+        with open(filename, "w") as output:
+            for section in gcode:
+                output.write('\n'.join(section))
+                output.write('\n'*2) # delimit sections with a blank line in between
+                
+    def generate_setup(self, xOffset, yOffset):
+        return (
             ("; *** G-code Prefix ***"
              "; Set unit system ([mm] mode)",
              "G21"),
@@ -40,22 +53,24 @@ class StirGCodeGenerator:
              "G90 ; Absolute Positioning"),
             (";Position stirrer",
              f"G1 X{xOffset} Y{yOffset} F{self.travelSpeed}",
-             f"G1 Z{self.stirHeight} F{self.travelSpeed}"),
+             f"G1 Z{self.stirHeight} F{self.travelSpeed}")
+        )
+    
+    def generate_stirring(self, xOffset, yOffset):
+        return (
             (";Start Loop",
              f"M808 L{self.loops}"),
             (";Stirring",
              f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}"),
             (";End Loop",
-             "M808"),
+             "M808")
+        )
+    
+    def generate_cleanup(self):
+        return (
             (";Raise stirrer",
              f"G1 Z{self.zFinal} F{self.travelSpeed}")
         )
-        
-        #file writing
-        with open(filename, "w") as output:
-            for section in gcode:
-                output.write('\n'.join(section))
-                output.write('\n'*2) # delimit sections with a blank line in between
 
 #Example run:
 """
