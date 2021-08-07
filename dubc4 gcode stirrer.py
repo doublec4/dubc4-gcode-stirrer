@@ -1,18 +1,20 @@
 #Program to generate simple g-code per /u/dubc4 request in the /r/3dprinting subreddit
 import math
 
-#xMax: printer length (mm)
-#yMax: printer width (mm)
-#zMax: printer height (mm)
-#zFinal: stirrer height at end of stirring (mm), must be less than zMax
-#stirDiameter: diameter of the circle the stirrer will trace while stirring (mm), must be less than xMax and yMax
-#stirSpeed: speed at which to stir (mm/sec)
-#stirTime: duration of stirring (min)
-#filename: file that will contain the generated g-code, existing files will be overwritten
-#travelSpeed: speed of travel moves (mm/sec)
-
 class StirGCodeGenerator:
     def __init__(self, xMax, yMax, zMax, zFinal, stirDiameter, stirSpeed, stirTime, stirHeight, travelSpeed=2400):
+        """ Creates a GCode generator for stirring a set amount of time.
+        
+        'xMax' printer length [mm]
+        'yMax' printer width [mm]
+        'zMax' printer height [mm]
+        'zFinal' stirrer height at the end of stirring [mm], must be less than 'zMax'
+        'stirDiameter' diameter of the circle to trace while stirring [mm], must be less than 'xMax' and 'yMax'
+        'stirSpeed' speed at which to stir [mm/sec]
+        'stirTime' duration of stirring [mins]
+        'travelSpeed' speed of travel moves [mm/sec]
+        
+        """
         self.center = [round(float(xMax) / 2, 2), round(float(yMax) / 2, 2), round(float(zMax) / 2, 2)]
         self.zFinal = round(float(zFinal))
         self.stirRadius = round(float(stirDiameter) / 2, 2)
@@ -22,6 +24,11 @@ class StirGCodeGenerator:
         self.travelSpeed = round(float(travelSpeed))
 
     def generate(self, filename):
+        """ Generates gcode and writes to 'filename'.
+        
+        Existing files will be overwritten.
+        
+        """
         xOffset = self.center[0] - self.stirRadius
         yOffset = self.center[1]
         gcode = (
