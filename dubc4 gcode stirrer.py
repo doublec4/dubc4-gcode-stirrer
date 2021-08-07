@@ -25,7 +25,7 @@ class StirGCodeGenerator:
         self.stirSpeed = round(float(stirSpeed) * 60, 2)
         self.stirHeight = round(float(stirHeight), 2)
         self.travelSpeed = round(float(travelSpeed))
-        self.compatibility = compatiblity
+        self.compatibility = compatibility
 
     def generate(self, filename):
         """ Generates gcode and writes to 'filename'.
