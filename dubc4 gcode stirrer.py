@@ -63,11 +63,10 @@ class StirGCodeGenerator:
              "; Set unit system ([mm] mode)",
              "G21"),
             (";Align coordinates to stirrer",
-             "G28 ; Home Position",
              "G90 ; Absolute Positioning"),
             (";Position stirrer",
              f"G0 X{xOffset} Y{yOffset} F{self.travelSpeed}",
-             f"G0 Z{self.stirHeight} F{self.travelSpeed}")
+             f"G0 Z{self.stirHeight} F500")
         )
     
     def generate_stirring(self, xOffset, yOffset):
@@ -91,7 +90,7 @@ class StirGCodeGenerator:
     def generate_cleanup(self):
         return (
             (";Raise stirrer",
-             f"G0 Z{self.zFinal} F{self.travelSpeed}"),
+             f"G0 Z{self.zFinal} F500"),
         )
 
 #Example run:
