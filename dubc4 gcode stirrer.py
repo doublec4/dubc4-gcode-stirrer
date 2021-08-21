@@ -74,7 +74,10 @@ class StirGCodeGenerator:
         if self.compatibility:
             return (
                 (heading,
-                 *(f"G2 X{xOffset} Y{yOffset} I{self.stirRadius} J0 F{self.stirSpeed}" 
+                 *(f"G0 X{self.center[0]} Y{self.center[1] + self.stirRadius} F{self.stirSpeed}",
+                   f"G0 X{self.center[0] + self.stirRadius} Y{self.center[1]} F{self.stirSpeed}",
+                   f"G0 X{self.center[0]} Y{self.center[1] - self.stirRadius} F{self.stirSpeed}",
+                   f"G0 X{self.center[0] - self.stirRadius[0]} Y{self.center[0]} F{self.stirSpeed}"
                    for _ in range(self.loops))),
             )
         
