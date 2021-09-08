@@ -6,8 +6,6 @@ My version uses straight line segments instead of G2/G3 arc commands since my pr
 I have also included the inputs to allow the user to enter the OctoPrint Enclosure plugin ID so the UV curing lights code will be automatically
 input into the gcode output.
 
-python project to generate gcode for stirring from reddit discussion https://www.reddit.com/r/3Dprinting/comments/oxlzgl/looking_for_someone_to_make_a_program_script_that/.
-
 This python project was written to be used with the Marlin firmware: https://marlinfw.org/. As of writing, the Marlin firmware version is 2.0.9.1 and should work with Marlin firmware version 2.0.8 and up.
 
 Notes on gcode M808:
@@ -26,3 +24,7 @@ test.gcode is an example output created with the following inputs:
 - stirSpeed = 10  
 - stirTime = 5  
 - fileName = "test.gcode"  
+
+DISCLAIMER...
+
+This creates gcode to perform a function on your 3D printer that it was not intended to do. This is for the purpose of experimentation. I am not responsible for any damage to your printer through the use of this script. I would recommend standing by your printer ready to kill the power until you are sure that the script does not cause any unwanted behavior.
